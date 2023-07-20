@@ -1,0 +1,61 @@
+part 1: download zipkin jar
+https://repo1.maven.org/maven2/io/zipkin/java/zipkin-server/2.12.9/
+
+start the server:
+java -jar zipkin-server-2.12.9-exec.jar
+
+Access the web UI
+http://localhost:9411/zipkin/
+
+-----------------------------------------------------------------
+part 2: 
+create zipkin client 
+
+manually add the dependency to pom.xml
+search for them using below url
+https://mvnrepository.com/search?q=zipkin
+
+ 		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-sleuth-zipkin</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-sleuth</artifactId>
+		</dependency> 
+
+
+--add the properties
+application.properties
+spring.zipkin.base-url=http://localhost:9411/
+
+------------------------------------------------------------------------
+part 3: Testing
+execute some REST call
+explore the web UP for Zipkin
+---------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
