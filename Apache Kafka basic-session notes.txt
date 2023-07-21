@@ -1,0 +1,816 @@
+﻿consumer and consumer group
+https://www.oreilly.com/library/view/kafka-the-definitive/9781491936153/ch04.html
+-----------------------------------------------------------------------------------------------
+Day 1
+===>Basic Introduction:
+An enterprise messaging system (EMS) or messaging system is a set of published enterprise-wide standards that allows organizations to send semantically precise messages between computer systems. EMS systems promote loosely coupled architectures that allow changes in the formats of messages to have minimum impact on message subscribers. EMS systems are facilitated by the use of structured messages (such as using XML or JSON), and appropriate protocols, such as DDS, MSMQ, AMQP or SOAP with web services.
+
+1.What is Messaging system
+	SMS,Mail,WhatsApp
+	Message(It is a entity of communication) eg--->Text,photo,Audio,file,video
+	In this communication there will be always two entities sender and receiver
+
+A messaging system is responsible for transferring data from one application to another so the applications can focus on data without getting bogged down on data transmission and sharing. 
+Distributed messaging is based on the concept of reliable message queuing. Messages are queued asynchronously between client applications and messaging system. There are two types of messaging patterns. The first one is a point-to-point and the other one is “publish–subscribe” (pub-sub) messaging system. Most of the messaging systems follow the pub-sub pattern.
+
+2.Types of communication/Types of Messaging pattern
+	a.synchronous processing-->real time eg -->phone calling -->both receiver and sender should be connected/online to complete the call.
+		
+	b.Asyncronous [Non blocking]--->real time eg --->sms,mail,whatsapp call,whatsapp message --->Even if the receivers device is switched off , he will receive the message when it is turned on.It is loosely coupled,no time dependency, no direct communication between sender and receiver. So here there is a broker to communicate.
+
+3.JMS(It is a Java API ,can be used of both sync and async communication)
+	PTP- Queue
+	PTS-  Topic
+   discuss the slides used in the microservices module of JMS.
+google search : jms durable vs non durable
+
+Durability
+Queues and Topics are important parts of messaging (particularly JMS). A queue by itself is great for point-to-point messaging, often one producer to one consumer. Topics on the other hand are most often used when you have a single producer (or multiple for the same purpose) and many consumers.
+
+A common pattern is to have the producer send the message to the topic and then have the queues subscribe to the topic. This allows each queue to receive its own copy of the message. But what happens to the message if it is sent to the topic, but no queues are online (remember our queues subscribe to the topic)?
+
+This is where durability comes into play. When a durable subscription is set up between a queue and a topic, the queue can be offline when the message hits the topic. Once the queue comes back online, the message can be received.
+
+If the subscription is non-durable, then any messages received to the topic while the topic subscriber is offline will not be received by the subscriber (in this case the queue).
+----------------------------------------------------------------------------------------
+FAQ: search for Kafka with cloud
+===============================================
+==>What is Apacke Kafka
+What is Apache Kafka?
+Apache Kafka is a popular event streaming platform used to collect, process, and store streaming event data or data that has no discrete beginning or end. Kafka makes possible a new generation of distributed applications capable of scaling to handle billions of streamed events per minute.
+
+Until the arrival of event streaming systems like Apache Kafka and Google Cloud Pub/Sub, data processing has typically been handled with periodic batch jobs, where raw data is first stored and then later processed at arbitrary time intervals. For example, a telecom company might wait until the end of the day, week, or month to analyze the millions of call records and calculate accumulated charges.
+
+One of the limitations of batch processing is that it’s not real time. Increasingly, organizations want to analyze data in real time in order to make timely business decisions and take action when interesting things happen. For example, the same telecom company mentioned above might benefit from keeping customers apprised of charges in real time as a way to enhance the overall customer experience.
+
+This is where event streaming comes in. Event streaming is the process of continuously processing infinite streams of events, as they are created, in order to capture the time-value of data as well as create push-based applications that take action whenever something interesting happens. Examples of event streaming include continuously analyzing log files generated by customer-facing web applications, monitoring and responding to customer behavior as users browse e-commerce websites, keeping a continuous pulse on customer sentiment by analyzing changes in clickstream data generated by social networks, or collecting and responding to telemetry data generated by Internet of Things (IoT) devices.
+
+============================================================================
+Kafka is a distributed streaming platform
+==> steps to process the data
+1.collect the data from different sources
+2.store the data in some location
+3.process the data
+
+Developed as a publish-subscribe messaging system to handle mass amounts of data at LinkedIn, today, Apache Kafka® is an open source event streaming software used by over 60% of the Fortune 100
+
+------------------------------------------------
+===>What is Big data(data beyond storage limit and beyond processing power)
+eg where huge data is generated: social media sites(fb,Twitter),mobile devices generationg data, AI devices.
+This data is unstructured/structured/semistructured.
+
+To cater this we have NoSQL db(Not only SQL)
+eg.mongodb,cassandra,hbase,Amazon Dynamodb
+
+Lets discuss the difference between data and stream
+Data - Bounded(size is fixed)
+Stream- Data in motion(can get generated in per min,per sec,per ms)
+such a data is called as a real time stream processing.
+
+Apache Kafka is an event streaming platform used to collect, process, store, and integrate data at scale. It has numerous use cases including distributed logging, stream processing, data integration, and pub/sub messaging.
+
+kafka.apache.org
+
+Assignment 1:
+https://youtu.be/FKgi3n-FyNU
+
+==========================================================================================
+==>Some basic terms and definitions
+
+1. Producer 
+ An application that sends the messages(data or record ) to kafka
+
+Message :
+                  1.Small to medium sized piece of data
+                  2.It may have some meaning or some schema for us but for apache kafka It is simple array of bytes.
+
+2. Consumer
+                  An application which reads the data Kafka.
+
+                Producer1                                                      Consumer1
+                                                  Kafka Server 
+                Producer2                                                     Consumer2
+
+3. Broker
+                   It is a Kafka Server.
+                   It's a just meaningful name given to kafka server
+                   Kafka Server acts as a broker between Producer and Consumer
+                   Producer and Consumer don't act directly
+                   They use Kafka Server as a agent or broker to exchange the messages
+
+From a physical infrastructure standpoint, Kafka is composed of a network of machines called brokers. In a contemporary deployment, these may not be separate physical servers but containers running on pods running on virtualized servers running on actual processors in a physical datacenter somewhere. However they are deployed, they are independent machines each running the Kafka broker process. Each broker hosts some set of partitions and handles incoming requests to write new events to those partitions or read events from them. Brokers also handle replication of partitions between each other.
+        
+4. Cluster
+            A group of computers sharing the workload for common purpose.
+            Kafka is a distrubuted system. so Cluster as same meaning as kafka.
+
+5. Topic
+
+                 Topic is a arbitary name for kafka stream
+Kafka’s most fundamental unit of organization is the topic, which is something like a table in a relational database. As a developer using Kafka, the topic is the abstraction you probably think the most about. You create different topics to hold different kinds of events and different topics to hold filtered and transformed versions of the same kind of event. 
+
+Every topic can be configured to expire data after it has reached a certain age (or the topic overall has reached a certain size), from as short as seconds to as long as years or even to retain messages indefinitely. The logs that underlie Kafka topics are files stored on disk. When you write an event to a topic, it is as durable as it would be if you had written it to any database you ever trusted.
+
+6. Partitions
+                  The data stored in a topic is huge or it is beyond storage capacity of a single computer.
+                      In this case Broker may have challange to store this data.
+                      One of the solution is to break that data in to 2 or more parts and distrubute it to a multiple computers.
+                      Kafka is a distrubuted system that runs on cluster of computers.
+                      Kafka can break the topic in partitions and store one partition on one computer. 
+
+Partitioning takes the single topic log and breaks it into multiple logs, each of which can live on a separate node in the Kafka cluster.
+
+This way, the work of storing messages, writing new messages, and processing existing messages can be split among many nodes in the cluster.
+https://www.confluent.io/learn/kafka-tutorial/
+
+                      But how many partitions?
+                      How kafka will decide that whether it has do 100 or 10 partiotions.
+                      Kafka will no take any decision. We have to take this decision.
+
+ 7. Offset
+                      It is a sequence no of a message in a partition.This number will be assigned to message as soon as message arrives.
+                      This sequence will not change .it is immutable.Kafka stores the message in a sequence in which they arrives.The offset
+                       starts from zero.offsets are local to the partitions.
+
+                        Global uniquue idenetifier of a message.
+                       Topic Name ->Partition Number->Offset =>using these three things you can locate a message.
+ 
+
+8. Consumer groups
+                        A group of consumers acting as a single logical unit.
+
+                       Partioning and consumer group  is a tool for scalability.
+
+                       Maximum no of consumers in a group is total no of partitions in a topic.      
+
+                       Kafka allows only one consumers to read data from a partition of the topic .
+
+                       This restriction is necessary to avoid double reading of records. 
+-------------------------------------------------------------------------------------------------
+==>How partitioning works
+Having broken a topic up into partitions, we need a way of deciding which messages to write to which partitions. Typically, if a message has no key, subsequent messages will be distributed round-robin among all the topic’s partitions. In this case, all partitions get an even share of the data, but we don’t preserve any kind of ordering of the input messages. If the message does have a key, then the destination partition will be computed from a hash of the key. This allows Kafka to guarantee that messages having the same key always land in the same partition, and therefore are always in order.
+
+For example, if you are producing events that are all associated with the same customer, using the customer ID as the key guarantees that all of the events from a given customer will always arrive in order. This creates the possibility that a very active key will create a larger and more active partition, but this risk is small in practice and is manageable when it presents itself. It is often worth it in order to preserve the ordering of keys.
+
+---------------------------------------------------------------------------------------------------
+Apache ZooKeeper is an effort to develop and maintain an open-source server which enables highly reliable distributed coordination.
+
+What is ZooKeeper?
+ZooKeeper is a centralized service for maintaining configuration information, naming, providing distributed synchronization, and providing group services. All of these kinds of services are used in some form or another by distributed applications. Each time they are implemented there is a lot of work that goes into fixing the bugs and race conditions that are inevitable. Because of the difficulty of implementing these kinds of services, applications initially usually skimp on them, which make them brittle in the presence of change and difficult to manage. Even when done correctly, different implementations of these services lead to management complexity when the applications are deployed.
+-----------------------------------------------------------------------------------------------
+as a lightweight library that can be integrated into an application.
+
+The application can then be operated as desired, as mentioned below: 
+
+Standalone, in an application server
+As a Docker container, or 
+Directly, via a resource manager such as Mesos.
+
+==>Apache Kafka Download  :
+
+Installing kafka on win 10 64 bit with open jdk 11
+Note : for jdk 11 install open jdk only will not work from oracle JDK
+==> download openjdk 11 from 
+https://jdk.java.net/archive/
+11.0.2 (build 11.0.2+9)
+Windows	64-bit	zip (sha256) 179 MB
+
+==>create a log dir with the name tmp where you extract the folder
+
+==> Add it to the path and home
+==>modify the path environment var to the installed dir:
+F:\softwares\openjdk-11.0.2_windows-x64_bin\jdk-11.0.2\bin
+==>modify the JAVA_HOME system variable to
+F:\softwares\openjdk-11.0.2_windows-x64_bin\jdk-11.0.2
+
+Also set JAVA_JRE C:\Softwares\openjdk-11.0.2_windows-x64_bin\jdk-11.0.2
+
+https://kafka.apache.org/downloads
+==>download and extract to c:\
+C:\kafka_2.13-2.6.0
+Note:It worked for me after copying it in c:\
+
+Optional:  Alternate way to troubleshoot:
+Acces kafka-run-class.bat
+set classpath=C:\Softwares\openjdk-17.0.2_windows-x64_bin\jdk-17.0.2
+
+
+==> START THE KAFKA ENVIRONMENT(Always required before any activity)
+NOTE: Your local environment must have Java 8+ installed.
+==>step 1:start the Zookeeper
+F:\kafka_2.12-2.7.0\bin\windows>start zookeeper-server-start.bat ..\..\config\zookeeper.properties
+
+==>step 2:start the kafka server
+F:\kafka_2.12-2.7.0\bin\windows>	
+
+
+problem:Kafka - Broker fails because all log dirs have failed
+step 1 : point to a new log directory in server.properties file and save the file
+log.dirs=C:\Tools\kafka_2.11-2.1.0\kafka-test-logs
+==>step 2 : start the kafka server again
+/bin/windows/kafka-server-start.bat /config/server.properties
+
+start kafka-server-start.bat ..\..\config\server.properties
+------------------------------------------------------------------------------------------------
+http://kafka.apache.org/quickstart
+
+Once we setup the environment next step is to create the topic
+==>step 3: CREATE A TOPIC TO STORE YOUR EVENTS
+Kafka is a distributed event streaming platform that lets you read, write, store, and process events (also called records or messages in the documentation) across many machines.
+
+Example events are payment transactions, geolocation updates from mobile phones, shipping orders, sensor measurements from IoT devices or medical equipment, and much more. These events are organized and stored in topics. Very simplified, a topic is similar to a folder in a filesystem, and the events are the files in that folder.
+
+So before you can write your first events, you must create a topic. Open another terminal session and run:
+
+C:\kafka_2.13-2.6.0\bin\windows>kafka-topics --create --topic quickstart-events --bootstrap-server localhost:9092
+
+==>lets fetch info about created topic
+kafka-topics --describe --topic quickstart-events --bootstrap-server localhost:9092
+
+==>STEP 4: WRITE SOME EVENTS INTO THE TOPIC
+A Kafka client communicates with the Kafka brokers via the network for writing (or reading) events. Once received, the brokers will store the events in a durable and fault-tolerant manner for as long as you need—even forever.
+
+Run the console producer client to write a few events into your topic. By default, each line you enter will result in a separate event being written to the topic.
+
+
+C:\kafka_2.13-2.6.0\bin\windows>kafka-console-producer --topic quickstart-events --bootstrap-server localhost:9092
+
+kafka-topics.bat --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic myKafkaTest
+
+kafka-topics.bat --create --zookeeper localhost:2181 --topic myKafkaTest
+
+kafka-console-producer --topic kafka_Example --bootstrap-server localhost:9092
+kafka-console-consumer --topic pwc --from-beginning --bootstrap-server localhost:9092
+
+kafka-console-producer --topic pwc --bootstrap-server localhost:9092
+====>STEP 5: READ THE EVENTS
+C:\kafka_2.13-2.6.0\bin\windows>kafka-console-consumer --topic quickstart-events --from-beginning --bootstrap-server localhost:9092
+kafka-console-consumer --topic Kafka_Example  --from-beginning --bootstrap-server localhost:9092
+Switch back to your producer terminal (previous step) to write additional events, and see how the events immediately show up in your consumer terminal.
+
+Because events are durably stored in Kafka, they can be read as many times and by as many consumers as you want. You can easily verify this by opening yet another terminal session and re-running the previous command again.
+
+kafka-console-consumer --topic quickstart-events --bootstrap-server localhost:9092
+
+===>To get the list of all topics
+kafka-topics.bat --list --zookeeper localhost:2181
+===========================================================================================
+Activity: Working with more than one partition
+
+C:\kafka_2.13-2.6.0\bin\windows>kafka-topics --create --topic pwc --bootstrap-server localhost:9092 --partitions 3 --replication-factor 1
+
+kafka-topics --describe --topic pwc --bootstrap-server localhost:9092
+output:
+  	Topic: pwc     Partition: 0    Leader: 0       Replicas: 0     Isr: 0
+        Topic: pwc     Partition: 1    Leader: 0       Replicas: 0     Isr: 0
+        Topic: pwc     Partition: 2    Leader: 0       Replicas: 0     Isr: 0
+
+Here leader is 0 which is nothing but the broker id which is set in server.properties file.
+==> sending messages using the producer
+kafka-console-producer --topic pwc --bootstrap-server localhost:9092
+
+==>reading messages from a consumer,by def it will read from current offset
+C:\kafka_2.13-2.6.0\bin\windows>kafka-console-consumer --topic pwc --bootstrap-server localhost:9092
+
+==>To read all messages from starting
+C:\kafka_2.13-2.6.0\bin\windows>kafka-console-consumer --topic pwc --from-beginning --bootstrap-server localhost:9092
+
+==>To read from a specific offset and partition, if offset is given partition must be provided
+C:\kafka_2.13-2.6.0\bin\windows>kafka-console-consumer --topic pwc --bootstrap-server localhost:9092 --offset 2 --partition 0
+
+kafka-console-consumer --topic mypwc --bootstrap-server localhost:9092 --offset 0 --partition 1
+
+Note:When the messages are sent we cannot decide the partition number, by default kafka has a alogorithm which sends to any partition to handle this we can use keys
+==========================================================================================
+Activity: setting up multiple brokers/kafka cluster
+1. In the config folder,open server.properties , file save as server1.properties change the broker id to some other value eg.1, by def it is 0, change the def port from 9092 to 9093, log.dirs
+
+Again run the kafka broker with server1.properties
+
+2. repeat same steps with different file name to start one more broker.
+
+F:\kafka_2.12-2.7.0\bin\windows>kafka-topics --describe --topic withreplication --bootstrap-server localhost:9092
+Topic: withreplication  PartitionCount: 3       ReplicationFactor: 2    Configs: segment.bytes=1073741824
+        Topic: withreplication  Partition: 0    Leader: 0       Replicas: 0,2   Isr: 0,2
+        Topic: withreplication  Partition: 1    Leader: 2       Replicas: 2,1   Isr: 2,1
+        Topic: withreplication  Partition: 2    Leader: 1       Replicas: 1,0   Isr: 1,0
+
+==>command to list the brokers 
+C:\Softwares\kafka_2.12-2.6.0\bin\windows>zookeeper-shell localhost:2181 ls /brokers/ids
+---------------------------------------------------------------------
+Activity : Understanding Replication
+ Whether brokers are bare metal servers or managed containers, they and their underlying storage are susceptible to failure, so we need to copy partition data to several other brokers to keep it safe. Those copies are called follower replicas, whereas the main partition is called the leader replica. When you produce data to the leader—in general, reading and writing are done to the leader—the leader and the followers work together to replicate those new writes to the followers.
+
+This happens automatically, and while you can tune some settings in the producer to produce varying levels of durability guarantees, this is not usually a process you have to think about as a developer building systems on Kafka. All you really need to know as a developer is that your data is safe, and that if one node in the cluster dies, another will take over its role
+
+prereq:Make sure that you have set up multiple brokers
+replication factor should be always less than number of brokers.
+
+C:\kafka_2.13-2.6.0\bin\windows>kafka-topics.bat --zookeeper localhost:2181 --create --topic withnoreplication --partitions 3 --replication-factor 1
+
+C:\kafka_2.13-2.6.0\bin\windows>kafka-topics.bat --zookeeper localhost:2181 --create --topic withreplication --partitions 3 --replication-factor 3
+
+--List all brokers with partition
+C:\kafka_2.13-2.6.0\bin\windows>kafka-topics.bat --zookeeper localhost:2181 --describe --topic withreplication
+
+output:
+C:\kafka_2.13-2.6.0\bin\windows>kafka-topics.bat --zookeeper localhost:2181 --describe --topic withreplication
+Topic: withreplication  PartitionCount: 3       ReplicationFactor: 3    Configs:
+        Topic: withreplication  Partition: 0    Leader: 0       Replicas: 0,2,1 Isr: 0,2,1
+        Topic: withreplication  Partition: 1    Leader: 1       Replicas: 1,0,2 Isr: 1,0,2
+        Topic: withreplication  Partition: 2    Leader: 2       Replicas: 2,1,0 Isr: 2
+
+Test :by disconnecting broker, observe the leaders switching
+output:
+C:\kafka_2.13-2.6.0\bin\windows>kafka-topics.bat --zookeeper localhost:2181 --describe --topic withreplication
+Topic: withreplication  PartitionCount: 3       ReplicationFactor: 3    Configs:
+        Topic: withreplication  Partition: 0    Leader: 0       Replicas: 0,2,1 Isr: 2,0
+        Topic: withreplication  Partition: 1    Leader: 0       Replicas: 1,0,2 Isr: 2,0
+        Topic: withreplication  Partition: 2    Leader: 2       Replicas: 2,1,0 Isr: 2,0
+------------------------------------------------------------------------------------
+C:\kafka_2.13-2.6.0\bin\windows>start kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic with3partition --partition 0
+
+C:\kafka_2.13-2.6.0\bin\windows>start kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic withreplication --partition 1
+
+C:\kafka_2.13-2.6.0\bin\windows>start kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic withreplication --partition 2 --from-beginning
+
+C:\kafka_2.13-2.6.0\bin\windows>start kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic withreplication --partition  0 --from-beginning
+
+C:\kafka_2.13-2.6.0\bin\windows>start kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic withreplication --partition  0 --offset 3
+-------------------------------------------------------------------------------------------
+kafka-topics.bat --describe --topic 
+==============================================================================================
+-->To print the Messages in key value format, test this without adding any key based data
+kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic withreplication --property print.key=true --from-beginning
+
+==>Sending data to same partition using the same key
+-->To send the Messages in key value format
+	start kafka-console-producer.bat --broker-list localhost:9092 --topic withreplication --property parse.key=true --property key.separator=:
+
+start kafka-console-producer.bat --broker-list localhost:9092 --topic pwc --property parse.key=true --property key.separator=:
+
+or
+
+start kafka-console-producer.bat --broker-list localhost:9092,localhost:9093,localhost:9094 --topic withreplication --property parse.key=true --property key.separator=:
+
+
+start kafka-console-producer.bat --broker-list localhost:9092 --topic pwc --property parse.key=true --property key.separator=:
+
+-->input to be given as key:value
+ eg: color:green
+
+-->To print the Messages in key value format
+kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic pwc --property print.key=true
+--from-beginning
+
+==> you can also read partition wise
+>kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic pwc --property print.key=true --from-beginning --partition 0
+>kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic pwc --property print.key=true --from-beginning --partition 1
+------------------------------------------------------------------------------
+==>Kafka vs Traditional Messaging Systems 
+In a traditional messaging topic, you keep ordering guarantees in place by sacrificing the ability to scale out consumers. In Kafka, consumer groups provide ordered delivery across an arbitrary number of consumers, so you get horizontal scale in the consuming application with the strongest ordering guarantee possible, while operating at scale.
+===========================================================================================
+==> Introduction to streams
+https://docs.confluent.io/platform/current/streams/index.html
+
+===>WordCount Streaming Application
+https://docs.confluent.io/platform/current/streams/kafka-streams-examples/docs/index.html
+https://docs.confluent.io/platform/current/streams/concepts.html
+
+step 1==> START THE KAFKA ENVIRONMENT(Always required before any activity)
+NOTE: Your local environment must have Java 8+ installed.
+-->start the Zookeeper
+C:\kafka_2.13-2.6.0\bin\windows>start zookeeper-server-start.bat ..\..\config\zookeeper.properties
+-->start the kafka server
+C:\kafka_2.13-2.6.0\bin\windows>start kafka-server-start.bat ..\..\config\server.properties
+
+step 2==> 
+#Create the input topic
+kafka-topics.bat --zookeeper localhost:2181 --create --topic streams-plaintext-input --partitions 1 --replication-factor 1
+# Create the output topic
+kafka-topics.bat --zookeeper localhost:2181 --create --topic streams-wordcount-output --partitions 1 --replication-factor 1 
+
+step 3==> 
+# Run the WordCount demo applicationfrom win folder of kafka
+kafka-run-class org.apache.kafka.streams.examples.wordcount.WordCountDemo
+
+step 4==>start the producer
+kafka-console-producer.bat --broker-list localhost:9092 --topic streams-plaintext-input 
+
+step 5==>start the consumer
+test 1: 
+start kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic streams-plaintext-input --property print.key=true
+
+test 2:
+kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic streams-wordcount-output --property key.deserializer=org.apache.kafka.common.serialization.StringDeserializer --property value.deserializer=org.apache.kafka.common.serialization.LongDeserializer --formatter kafka.tools.DefaultMessageFormatter --from-beginning --property print.key=true
+
+==> java code for wordcount application processing
+https://kafka.apache.org/documentation/streams/#:~:text=Kafka%20Streams%20is%20a%20client,Kafka's%20server%2Dside%20cluster%20technology.
+============================================================================================
+==>Apache Kafka Connector
+Apache Kafka Connector – Connectors are the components of Kafka that could be setup to listen the changes that happen to a data source like a file or database, and pull in those changes automatically.
+https://docs.confluent.io/cloud/current/connectors/index.html
+
+==>File Connector example
+C:\kafka_2.13-2.6.0\bin\windows>start zookeeper-server-start.bat ..\..\config\zookeeper.properties
+-->start the kafka server
+
+C:\kafka_2.13-2.6.0\bin\windows>start kafka-server-start.bat ..\..\config\server.properties
+
+>>Navigate to 
+C:\kafka_2.13-2.6.0\bin\windows
+>>you will find the built in connector here like
+eg. connect-standalone
+>>To start this connect-standalone we need to do some configuration
+C:\kafka_2.13-2.6.0\config>>edit the connect-standalone.properties
+Observe the broker id here which is by def 9092
+>>open connect-file-source.properties
+name=local-file-source
+
+connector.class=FileStreamSource
+
+tasks.max=1
+
+file=test.txt
+
+topic=connect-test
+
+Observe the type of data source and the data source location
+test.txt is the name of the file, typeof connector is Filestream,by def topic name is connect-test
+>>open the connect-file-sink.properties
+name=local-file-sink
+
+connector.class=FileStreamSink
+
+tasks.max=1
+
+file=test.sink.txt
+
+topics=connect-test
+
+>>Now create a test.txt in windows folder
+start connect-standalone.bat ..\..\config\connect-standalone.properties ..\..\config\connect-file-source.properties ..\..\config\connect-file-sink.properties
+
+A new topic should get created connect-test, use kafka tool to monitor this.
+
+kafka-topics.bat --describe --topic connect-test --zookeeper localhost:2181
+
+kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic connect-test --from-beginning
+
+>>Also observe the __consumer_offsets is created with 50 parttions.
+Leader is 0 only means if this broker goes down the entire system will go down so to overcome this problem we have to go to the concept of replication.
+
+>>test.sink.txt is created in windows folder
+
+Note:
+connect-file-source.properties:
+
+name=local-file-source
+connector.class=FileStreamSource
+tasks.max=1
+topic=connect-test
+file=test.txt
+This configuration has some properties that are common for all source connectors:
+
+name is a user-specified name for the connector instance
+connector.class specifies the implementing class, basically the kind of connector
+tasks.max specifies how many instances of our source connector should run in parallel, and
+topic defines the topic to which the connector should send the output
+=============================================================================================
+==>Kafka JDBC Connector
+==> Mysql connector example
+
+======================
+==>step 1
+Create a mysql databse and a table
+drop database company;
+create database company;
+use company;
+create table employee(id int primary key,name text,email text,department text);
+insert into employee values(1,'ram','ram@gmail.com','HR');
+insert into employee values(2,'rahim','rahim@gmail.com','Insurance');
+insert into employee values(3,'david','david@gmail.com','Training');
+
+==> step 2
+1.We need 2 dependencies/jar file
+   1.mysql connector.jar
+   2.kafka connect jdbc
+2.Copy both jars inside libs folder of Kafka folder
+
+==>step 3
+==>Start zookeeper 
+start zookeeper-server-start.bat ..\..\config\zookeeper.properties
+
+==>start kafka
+kafka-server-start.bat ..\..\config\server.properties
+
+==> step 4
+start connector connect-distributed ../../config/connect-distributed.properties
+
+===> step 5
+ Test using postman
+POST  http://localhost:8083/connectors -H "Content-Type: application/json" 
+
+-d '{
+        "name": "mysql-source-connector",
+        "config": {
+                "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+                "tasks.max":"2",
+                "connection.url": "jdbc:mysql://localhost:3306/company",
+                "connection.user": "root",
+                "connection.password": "password",
+                "topic.prefix": "pwc-",
+                "mode":"incrementing",
+                "table.whitelist":"employee",
+                "incrementing.column.name":"id",
+                "timestamp.column.name":"modified",
+                "poll.interval":1000
+                }
+        }'
+
+
+To see the connectors
+=====================
+http://localhost:8083/connectors
+http://localhost:8083/connectors/mysql-source-connector/status
+
+kafka-console-producer.bat --broker-list localhost:9092 --topic pwc-employee 
+start kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic pwc-employee --property print.key=true
+
+Kafka To MySQL Sink Connector
+================================
+
+kafka-topics.bat --zookeeper localhost:2181 --create --topic test --partitions 1 --replication-factor 1
+
+
+
+POST  http://localhost:8083/connectors -H "Content-Type: application/json" 
+
+
+   {
+        "name": "mysql-sink-connector",
+        "config": {
+                "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+                "tasks.max":"1",     
+                "connection.url": "jdbc:mysql://localhost:3306/company?user=root&password=password",
+                "topics": "test",
+                "auto.create":"true"
+                }
+     }
+
+http://localhost:8083/connectors
+http://localhost:8083/connectors/mysql-source-connector/status
+
+
+
+start kafka-console-producer.bat --broker-list localhost:9092 --topic test
+>
+{
+  "schema": {
+    "type": "struct",
+    "fields": [
+      {
+        "type": "int64",
+        "optional": false,
+        "field": "id"
+      },
+      {
+        "type": "string",
+        "optional": true,
+        "field": "name"
+      },
+      {
+        "type": "string",
+        "optional": true,
+        "field": "email"
+      },
+      {
+        "type": "string",
+        "optional": true,
+        "field": "department"
+      }
+    ],
+    "optional": false,
+    "name": "test"
+  },
+  "payload": {
+    "id": 10,
+    "name": "prakash",
+    "email": "prakash@gmail.com",
+    "department": "training"
+}}
+
+
+kafka-console-producer.bat --broker-list localhost:9092 --topic input
+-----------------------------------------------------------------------------------------------------------------------
+Day 4
+Running kafka_demo_app
+
+part 1: creating a Kafka java Application
+
+1. Download Eclipse or STS any IDE
+2. File-->New-->Java Project
+3. Add the Kafka packages to the lib
+    kafka-client.jar
+    kafka-stream.jar
+  You can download the jars from central maven repository.
+
+Activity 1:
+1. Start the Zookeeper and kafka server
+2. understand the jar files required to run the app. You can locate them in kafka\libs
+3. Observe simpleproducer.java, note the compulsory parameters topic name and message.
+4. understand the topic creation auto enabled property, a-topic will get created auto
+ note the server.properties file which is enabled for topic auto creation
+5.understand the producerRecord parameters
+Note here we are appending the index to the key, so for every value there is a different key.
+Also note there is one partition.
+6. run the application
+Expected output:
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+SimpleProducer Completed the message sending
+Also watch using key tool
+7.Now we want to see the data,from cmd execute
+kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic a-topic --property print.key=true --from-beginning
+
+Kafka Producers
+The API surface of the producer library is fairly lightweight: In Java, there is a class called KafkaProducer that you use to connect to the cluster. You give this class a map of configuration parameters, including the address of some brokers in the cluster, any appropriate security configuration, and other settings that determine the network behavior of the producer. There is another class called ProducerRecord that you use to hold the key-value pair you want to send to the cluster. 
+
+To a first-order approximation, this is all the API surface area there is to producing messages. Under the covers, the library is managing connection pools, network buffering, waiting for brokers to acknowledge messages, retransmitting messages when necessary, and a host of other details no application programmer need concern herself with.
+----------------------------------------------------------------------------------
+Activity 2:In above demo there is there is single partition,now lets create a topic with 4 partions and same key.
+eg. Synchronousproducer.java
+
+--exec from cmd line
+kafka-topics.bat --zookeeper localhost:2181 --create --topic b-topic --partitions 4 --replication-factor 1
+
+ProducerRecord<String, String> record = new ProducerRecord<>(topicName,key,value+"==="+i);
+When keys are same messages go to the same partitions
+
+Message is sent to Partition no 0 and offset 1 b-topic  
+Message is sent to Partition no 0 and offset 2 b-topic  
+Message is sent to Partition no 0 and offset 3 b-topic  
+Message is sent to Partition no 0 and offset 4 b-topic  
+Message is sent to Partition no 0 and offset 5 b-topic  
+SynchronousProducer Completed with success.
+----------------------------------------------------
+ProducerRecord<String, String> record = new ProducerRecord<>(topicName,key+""+i,value+"==="+i);
+When keys are different messages go toa different partitions
+expected output:
+
+Message is sent to Partition no 1 and offset 0 b-topic  
+Message is sent to Partition no 3 and offset 0 b-topic  
+Message is sent to Partition no 3 and offset 1 b-topic  
+Message is sent to Partition no 0 and offset 0 b-topic  
+Message is sent to Partition no 3 and offset 2 b-topic  
+SynchronousProducer Completed with success.
+
+When you run one more time,keys will remain sameandoffset value will increase
+------------------------------------------------------------------------------------------------
+Activity 3: AsynchronousProducer.java
+test both with same and different key.
+Sent Message 1
+Sent Message 2
+Sent Message 3
+Sent Message 4
+Sent Message 5
+AsynchronousProducer call completed
+Message is sent to Partition no 0 and offset 0  c-topic
+Message is sent to Partition no 0 and offset 1  c-topic
+Message is sent to Partition no 0 and offset 2  c-topic
+Message is sent to Partition no 0 and offset 3  c-topic
+Message is sent to Partition no 0 and offset 4  c-topic
+---------------------------------------------------------------------------------------------
+Activity 4:SimpleConsumer.java
+
+Run as java app, run with the different topics created.
+-----------------------------------------------------------------------------------------
+Acivity 5: Sending Objects as the message/customserializer/customdeserializer
+
+For streams the serializers are in built but for custome objects we need to createour own.
+
+supplier.java
+SupplierSerializer.java
+SupplierProducer.java
+SupplierConsumer.java
+-----------------------------------------------------------------------------------
+Activity 6:SensorTopic
+
+What is a default partitioner.
+The default partitioner follows these rules.
+
+--If a producer specifies a partition number in the message record, use it.
+--If the message doesn’t hard code a partition number, but it provides a key, choose a partition based on a hash value of the key.
+--If no partition number or key is present, pick a partition in a round-robin fashion.
+
+Before you run the activity create a topic called Sensortopic with 10 partions.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Day3
+=====
+
+1.Data processing started with the idea of capturing and storing data first and then processing it later.
+
+2.When Bigdata processing began to emerge, it followed the same pattern, obtain the data first, saves it, and then, transforms it later. 
+
+3.Data Lake is the result of the same idea. Data Lake is a place where data goes to sit, and after that, you process it in smaller batches. 
+
+4.While many of us are building upon the data lake, at the same time, a whole new fleet of technology companies is architecting their systems in a non-traditional method.
+
+5.They take everything happening in the business and make it available as a stream of events.
+
+6.Then they create applications to tap into the stream, consume data packets in real-time and put them to use for taking critical actions and decision making.  
+
+7.Look  about the change in perspective, we are not looking at the data as a table in a database or a file in the data lake. Data lake is stationary, but the stream is data in motion.
+
+8.When you process a dataset that is already sitting in a database, or it is stored in a data lake, we call it as data processing.
+
+9.But when you are processing a data stream or a dataset which is in motion, we call it "stream processing."
+
+10.And when you want to do it in seconds or in milliseconds, the idea is termed as real-time stream processing. 
+
+
+10.You already learned and a kind of mastered data processing techniques. It is straightforward. Read data from the database, process it using SQL or using a procedural language, and then, store the outcome back to a database.
+
+11.If you are dealing with big data, the idea is still the same. Read it from the data lake, process it using SQL or using a procedural language, and then, store the outcome back to the data lake.
+
+12.But processing a stream of data is not that straightforward. A stream is a continuous flow of data, it is unbounded. It’s an endless flow that keeps bringing more and more data to your system every second. How do you deal with that? How do you process that stream? Your data is not stored in a database table or in a file. The moment you start thinking about real-time stream processing, a whole bunch of new problems starts popping in your mind. And that’s what this course is all about. Solving those problems. Answering those questions.  
+In this course, I am going to teach you two things.
+
+How do you create and manage a stream of data? I mean, to process data from a data lake, you must bring some data into a lake. Similarly, to handle a stream of data, you must create a stream. Right?
+
+
+
+
+1.Stream from kafka
+         <null,"Hello hello World">
+
+2.MapValues lowercase   
+         <null,"hello hello world">
+
+3.FlatMapValues split by space
+         <null,"hello"> <null,"hello"> <null,"world">
+
+4.SelectKey to apply key
+         <"hello","hello"> <"hello","hello"> <"world","world">
+
+5.GroupBkey before aggregation
+        (<"hello","hello"> <"hello","hello">) (<"world","world">)
+            
+
+6.Count occurences in each group
+        <"hello",2>  <"world",1>
+
+
+7.To in order to write the results back to Kafka
+        data point is written to kafka
+
+  
+
+
+
+
+
+
+
+FAQ:
+https://www.upsolver.com/blog/kafka-versus-rabbitmq-architecture-performance-use-case
+https://www.programsbuzz.com/kafka-mcq
